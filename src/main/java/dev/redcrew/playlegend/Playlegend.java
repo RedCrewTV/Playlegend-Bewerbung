@@ -1,22 +1,24 @@
 package dev.redcrew.playlegend;
 
+import dev.redcrew.playlegend.entitiy.Group;
+import dev.redcrew.playlegend.entitiy.Player;
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 public final class Playlegend extends JavaPlugin {
 
     @Getter
     private static Playlegend instance;
 
-    @Getter
-    private final DatabaseManager databaseManager = new DatabaseManager();
-
     @Override
     public void onEnable() {
         // Plugin startup logic
         instance = this;
-        getDatabaseManager().executeFile("/sql/init.sql");
 
 
     }
@@ -24,6 +26,6 @@ public final class Playlegend extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        getDatabaseManager().disconnect();
+        DatabaseManager.shutdown();
     }
 }

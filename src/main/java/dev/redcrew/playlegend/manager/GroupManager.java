@@ -1,7 +1,4 @@
-package dev.redcrew.playlegend.group;
-
-import lombok.Data;
-import org.jetbrains.annotations.NotNull;
+package dev.redcrew.playlegend.manager;
 
 /**
  * This file is a JavaDoc!
@@ -14,8 +11,6 @@ import org.jetbrains.annotations.NotNull;
  * Discord: redcrew <p>
  * Website: <a href="https://redcrew.dev/">https://redcrew.dev/</a>
  */
-@Data
-public class Group {
-    private final @NotNull String name;
-    private final @NotNull String prefix;
+public class GroupManager {
+
 }
