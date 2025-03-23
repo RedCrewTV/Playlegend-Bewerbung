@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres
+    container_name: postgresDB
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: legend
+      POSTGRES_PASSWORD: legendPW
+      POSTGRES_DB: playlegend
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./docker/db:/var/lib/postgresql/data
+  mc:
+    image: itzg/minecraft-server
+    container_name: paper
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "25565:25565"
+    environment:
+      EULA: TRUE
+      TYPE: PAPER
+      VERSION: 1.21.4
+    volumes:
+      - ./docker/mc:/data
+      - ./build/libs/:/plugins

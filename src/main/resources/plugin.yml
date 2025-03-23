@@ -1,0 +1,7 @@
+name: Playlegend
+version: '1.0'
+main: dev.redcrew.playlegend.Playlegend
+api-version: '1.21'
+authors: [ RedCrew ]
+description: Playlegend applicant task
+website: https://redcrew.dev/
