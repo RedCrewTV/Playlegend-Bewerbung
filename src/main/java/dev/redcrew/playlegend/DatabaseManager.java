@@ -40,7 +40,6 @@ public class DatabaseManager {
         config.setMaximumPoolSize(10);
         config.setDriverClassName("org.postgresql.Driver");
 
-        //config.addDataSourceProperty("", ""); // MISC settings to add
         this.dataSource = new HikariDataSource(config);
     }
 
