@@ -30,5 +30,4 @@ public class PlayerGroupAssignmentId implements Serializable {
 
     private UUID playerId;
     private Long groupId;
-
 }

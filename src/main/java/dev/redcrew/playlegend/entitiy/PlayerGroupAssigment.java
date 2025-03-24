@@ -45,4 +45,9 @@ public class PlayerGroupAssigment {
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
 
+    public PlayerGroupAssigment(Group group, Player player, LocalDateTime expiresAt) {
+        this.group = group;
+        this.player = player;
+        this.expiresAt = expiresAt;
+    }
 }

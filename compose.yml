@@ -25,6 +25,8 @@ services:
       EULA: TRUE
       TYPE: PAPER
       VERSION: 1.21.4
+      OPS: |
+        RedCrewTV
     volumes:
       - ./docker/mc:/data
       - ./build/libs/:/plugins

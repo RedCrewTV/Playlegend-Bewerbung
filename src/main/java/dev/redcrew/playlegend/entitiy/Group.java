@@ -45,4 +45,10 @@ public class Group {
         this.name = name;
         this.prefix = prefix;
     }
+
+    public Group(String name, int priority, String prefix) {
+        this.name = name;
+        this.priority = priority;
+        this.prefix = prefix;
+    }
 }

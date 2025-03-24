@@ -45,12 +45,6 @@ public final class DatabaseManager {
         return sessionFactory.openSession();
     }
 
-    public static void closeSession(Session session) {
-        if (session != null) {
-            session.close();
-        }
-    }
-
     public static void shutdown() {
         if (sessionFactory != null) {
             sessionFactory.close();
