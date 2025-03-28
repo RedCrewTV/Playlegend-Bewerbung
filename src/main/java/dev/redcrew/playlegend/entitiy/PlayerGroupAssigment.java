@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -38,11 +40,13 @@ public class PlayerGroupAssigment {
     @ManyToOne
     @MapsId("playerId")
     @JoinColumn(name = "player_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Player player;
 
     @ManyToOne
     @MapsId("groupId")
     @JoinColumn(name = "group_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Group group;
 
     public PlayerGroupAssigment(Group group, Player player, LocalDateTime expiresAt) {

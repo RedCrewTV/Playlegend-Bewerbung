@@ -73,7 +73,7 @@ public final class GroupManager {
 
         try {
             session.beginTransaction();
-            return session.createQuery("from Group where name = :name", Group.class)
+            return session.createQuery("from Group where LOWER(name) = LOWER(:name)", Group.class)
                     .setParameter("name", name)
                     .uniqueResult();
         } finally {

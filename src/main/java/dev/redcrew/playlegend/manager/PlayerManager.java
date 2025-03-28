@@ -85,6 +85,26 @@ public final class PlayerManager {
     }
 
     /**
+     * Retrieves a player based on the specified name.
+     *
+     * @param name The name of the player to retrieve. Must not be null.
+     * @return The Player object corresponding to the specified name, or null if no player is found.
+     */
+    public static Player getPlayerByName(@NotNull String name) {
+        Session session = DatabaseManager.getSession();
+
+        try {
+            session.beginTransaction();
+            return session.createQuery("from Player where LOWER(name) = LOWER(:name)", Player.class)
+                    .setParameter("name", name)
+                    .uniqueResult();
+        } finally {
+            session.getTransaction().commit();
+            session.close();
+        }
+    }
+
+    /**
      * Updates the name of the specified player.
      *
      * @param player The player object whose name is to be updated. Must not be null.
@@ -109,19 +129,74 @@ public final class PlayerManager {
     }
 
     /**
-     * Assigns a player to a specified group with an optional expiration date.
+     * Assigns a player to a group with an expiration date.
      *
-     * @param player The player to assign to the group. Must not be null.
-     * @param group The group to assign the player to. Must not be null.
-     * @param expiresAt The expiration date for the group assignment, can be null for no expiration.
-     * @throws IllegalArgumentException if the player or group does not exist in the system.
+     * @param player The Player object to assign to the group. Must not be null.
+     * @param group The Group object to assign the player to. Must not be null.
+     * @param expiresAt The LocalDateTime when the assignment expires.
+     * @throws IllegalArgumentException If the player or group does not exist, or if an error occurs during the assignment process.
      */
     public static void assignGroup(@NotNull Player player, @NotNull Group group, LocalDateTime expiresAt) throws IllegalArgumentException {
         if(getPlayerByUUID(player.getId()) == null) throw new IllegalArgumentException("Player not exists!");
         if(GroupManager.getGroupByName(group.getName()) == null) throw new IllegalArgumentException("Group not exists!");
 
-        //todo
+        Session session = DatabaseManager.getSession();
 
+        try {
+            session.beginTransaction();
+
+            Player managedPlayer = session.get(Player.class, player.getId());
+            Group managedGroup = session.get(Group.class, group.getId());
+
+            if (managedPlayer == null || managedGroup == null) throw new IllegalArgumentException("Player or Group not found in the session");
+
+            PlayerGroupAssignmentId id = new PlayerGroupAssignmentId(managedPlayer.getId(), managedGroup.getId());
+            PlayerGroupAssigment assignment = new PlayerGroupAssigment(id, LocalDateTime.now(), expiresAt, managedPlayer, managedGroup);
+
+            session.persist(assignment);
+            session.getTransaction().commit();
+        } catch(Exception e) {
+            if(session.getTransaction().isActive()){
+                session.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            session.close();
+        }
     }
+
+    /**
+     * Removes the assignment of a player from a specified group.
+     *
+     * @param player The Player object to unassign. Must not be null.
+     * @param group The Group object from which to unassign the player. Must not be null.
+     * @throws IllegalArgumentException if no assignment exists for the given player and group, or if any error occurs during the unassignment process.
+     */
+    public static void unassignGroup(@NotNull Player player, @NotNull Group group) throws IllegalArgumentException {
+        if(getPlayerByUUID(player.getId()) == null) throw new IllegalArgumentException("Player not exists!");
+        if(GroupManager.getGroupByName(group.getName()) == null) throw new IllegalArgumentException("Group not exists!");
+
+        Session session = DatabaseManager.getSession();
+
+        try {
+            session.beginTransaction();
+
+            PlayerGroupAssignmentId id = new PlayerGroupAssignmentId(player.getId(), group.getId());
+            PlayerGroupAssigment assignment = session.get(PlayerGroupAssigment.class, id);
+
+            if (assignment == null) throw new IllegalArgumentException("No assignment exists for the given player and group.");
+
+            session.remove(assignment);
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            if (session.getTransaction().isActive()) {
+                session.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
+
 
 }
