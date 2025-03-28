@@ -186,7 +186,7 @@ public class GroupCMD implements CommandExecutor, TabCompleter {
                         }
                     }
                     case "unassign" -> {
-                        //todo
+                        //todo write this command
                     }
                 }
             }

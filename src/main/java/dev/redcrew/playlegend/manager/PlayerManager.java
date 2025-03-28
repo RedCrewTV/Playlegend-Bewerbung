@@ -5,7 +5,10 @@ import dev.redcrew.playlegend.entitiy.Group;
 import dev.redcrew.playlegend.entitiy.Player;
 import dev.redcrew.playlegend.entitiy.PlayerGroupAssigment;
 import dev.redcrew.playlegend.entitiy.PlayerGroupAssignmentId;
+import dev.redcrew.playlegend.events.PlayerGroupAssigned;
+import dev.redcrew.playlegend.events.PlayerGroupUnassigned;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.hibernate.Session;
 import org.jetbrains.annotations.NotNull;
 
@@ -155,6 +158,7 @@ public final class PlayerManager {
 
             session.persist(assignment);
             session.getTransaction().commit();
+            Bukkit.getPluginManager().callEvent(new PlayerGroupAssigned(assignment));
         } catch(Exception e) {
             if(session.getTransaction().isActive()){
                 session.getTransaction().rollback();
@@ -188,6 +192,7 @@ public final class PlayerManager {
 
             session.remove(assignment);
             session.getTransaction().commit();
+            Bukkit.getPluginManager().callEvent(new PlayerGroupUnassigned(assignment));
         } catch (Exception e) {
             if (session.getTransaction().isActive()) {
                 session.getTransaction().rollback();
