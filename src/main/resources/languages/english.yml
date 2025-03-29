@@ -7,6 +7,7 @@ playlegend_group_cmd_help_edit: '&8- &7/group edit <name> <name|priority|prefix>
 playlegend_group_cmd_help_assign: '&8- &7/group assign <player> <group> (<days> <hours> <minutes> <seconds>)'
 playlegend_group_cmd_help_unassign: '&8- &7/group unassign <player> <group>'
 playlegend_group_cmd_help_info: '&8- &7/group info <player>'
+playlegend_group_cmd_help_display: '&8- &7/group display <player>'
 playlegend_group_cmd_exists_not: '&7The group &9%name%&7 does not exists!'
 playlegend_group_cmd_exists_not_player: '&7The player &9%name%&7 does not exists!'
 playlegend_group_cmd_exists_already: '&7The group &9%name%&7 already exists!'

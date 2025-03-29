@@ -4,6 +4,7 @@ import dev.redcrew.playlegend.command.GroupCMD;
 import dev.redcrew.playlegend.entitiy.Group;
 import dev.redcrew.playlegend.entitiy.Player;
 import dev.redcrew.playlegend.language.Language;
+import dev.redcrew.playlegend.listener.AsyncChatListener;
 import dev.redcrew.playlegend.listener.PlayerJoinListener;
 import dev.redcrew.playlegend.manager.GroupManager;
 import lombok.Getter;
@@ -38,6 +39,7 @@ public final class Playlegend extends JavaPlugin {
 
         //Listener
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), this);
+        Bukkit.getPluginManager().registerEvents(new AsyncChatListener(), this);
 
         //Commands
         Objects.requireNonNull(getCommand("group")).setExecutor(new GroupCMD());

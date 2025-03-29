@@ -265,5 +265,13 @@ public final class PlayerManager {
         }
     }
 
-
+    public static Group getHighestPriorityGroupForPlayer(@NotNull Player player) {
+        Group highestPriorityGroup = null;
+        for (Group group : getGroupsForPlayer(player)) {
+            if(highestPriorityGroup == null || group.getPriority() > highestPriorityGroup.getPriority()) {
+                highestPriorityGroup = group;
+            }
+        }
+        return highestPriorityGroup;
+    }
 }

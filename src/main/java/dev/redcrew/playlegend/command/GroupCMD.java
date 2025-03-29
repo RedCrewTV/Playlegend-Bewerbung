@@ -190,6 +190,7 @@ public final class GroupCMD implements CommandExecutor, TabCompleter {
                         player.sendMessage(TranslatableText.of("playlegend_group_cmd_help_unassign", Language.getPreferredLanguage(player)).getText());
                         player.sendMessage(TranslatableText.of("playlegend_group_cmd_help_assign", Language.getPreferredLanguage(player)).getText());
                         player.sendMessage(TranslatableText.of("playlegend_group_cmd_help_info", Language.getPreferredLanguage(player)).getText());
+                        player.sendMessage(TranslatableText.of("playlegend_group_cmd_help_display", Language.getPreferredLanguage(player)).getText());
                         return true;
                     }
                     case "assign" -> {
@@ -273,6 +274,9 @@ public final class GroupCMD implements CommandExecutor, TabCompleter {
 
                             return true;
                         }
+                    }
+                    case "display" -> {
+                        //todo
                     }
                 }
             }
