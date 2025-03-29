@@ -2,6 +2,7 @@ package dev.redcrew.playlegend;
 
 import dev.redcrew.playlegend.entitiy.Group;
 import dev.redcrew.playlegend.entitiy.Player;
+import dev.redcrew.playlegend.entitiy.PlayerDisplay;
 import dev.redcrew.playlegend.entitiy.PlayerGroupAssigment;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -32,6 +33,7 @@ public final class DatabaseManager {
                     .addAnnotatedClass(Group.class)
                     .addAnnotatedClass(Player.class)
                     .addAnnotatedClass(PlayerGroupAssigment.class)
+                    .addAnnotatedClass(PlayerDisplay.class)
                     .buildMetadata()
                     .buildSessionFactory();
         }

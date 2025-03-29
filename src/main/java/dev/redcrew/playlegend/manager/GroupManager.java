@@ -4,8 +4,10 @@ import dev.redcrew.playlegend.DatabaseManager;
 import dev.redcrew.playlegend.entitiy.Group;
 import dev.redcrew.playlegend.entitiy.Player;
 import dev.redcrew.playlegend.entitiy.PlayerGroupAssigment;
+import dev.redcrew.playlegend.events.GroupUpdateEvent;
 import jakarta.transaction.RollbackException;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.hibernate.Session;
 import org.jetbrains.annotations.NotNull;
 
@@ -138,6 +140,7 @@ public final class GroupManager {
             if(g != null) {
                 g.setPrefix(prefix);
                 session.merge(g);
+                Bukkit.getPluginManager().callEvent(new GroupUpdateEvent(g));
             }
         } finally {
             session.getTransaction().commit();
@@ -162,6 +165,7 @@ public final class GroupManager {
             if(g != null) {
                 g.setPriority(priority);
                 session.merge(g);
+                Bukkit.getPluginManager().callEvent(new GroupUpdateEvent(g));
             }
         } finally {
             session.getTransaction().commit();
@@ -187,6 +191,7 @@ public final class GroupManager {
             if(g != null) {
                 g.setName(name);
                 session.merge(g);
+                Bukkit.getPluginManager().callEvent(new GroupUpdateEvent(g));
             }
         } finally {
             session.getTransaction().commit();

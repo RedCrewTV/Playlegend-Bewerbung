@@ -6,11 +6,9 @@ import dev.redcrew.playlegend.entitiy.Group;
 import dev.redcrew.playlegend.entitiy.Player;
 import dev.redcrew.playlegend.entitiy.PlayerGroupAssigment;
 import dev.redcrew.playlegend.entitiy.PlayerGroupAssignmentId;
-import dev.redcrew.playlegend.events.PlayerGroupAssigned;
-import dev.redcrew.playlegend.events.PlayerGroupExpired;
-import dev.redcrew.playlegend.events.PlayerGroupUnassigned;
-import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
-import lombok.Getter;
+import dev.redcrew.playlegend.events.PlayerGroupAssignedEvent;
+import dev.redcrew.playlegend.events.PlayerGroupExpiredEvent;
+import dev.redcrew.playlegend.events.PlayerGroupUnassignedEvent;
 import org.bukkit.Bukkit;
 import org.hibernate.Session;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +18,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * This file is a JavaDoc!
@@ -184,15 +181,13 @@ public final class PlayerManager {
             session.getTransaction().commit();
 
             if(expiresAt != null) {
-                Bukkit.getAsyncScheduler().runDelayed(Playlegend.getInstance(), task -> {
-
-                    unassignGroup(player, group);
-                    Bukkit.getPluginManager().callEvent(new PlayerGroupExpired(assignment));
-
-                }, LocalDateTime.now().until(expiresAt, ChronoUnit.SECONDS), TimeUnit.SECONDS);
+                Bukkit.getAsyncScheduler().runDelayed(Playlegend.getInstance(), task -> Bukkit.getScheduler().runTask(Playlegend.getInstance(), () -> {
+                            unassignGroup(player, group);
+                            Bukkit.getPluginManager().callEvent(new PlayerGroupExpiredEvent(assignment));
+                        }), LocalDateTime.now().until(expiresAt, ChronoUnit.SECONDS), TimeUnit.SECONDS);
             }
 
-            Bukkit.getPluginManager().callEvent(new PlayerGroupAssigned(assignment));
+            Bukkit.getPluginManager().callEvent(new PlayerGroupAssignedEvent(assignment));
         } catch(Exception e) {
             if(session.getTransaction().isActive()){
                 session.getTransaction().rollback();
@@ -226,7 +221,7 @@ public final class PlayerManager {
 
             session.remove(assignment);
             session.getTransaction().commit();
-            Bukkit.getPluginManager().callEvent(new PlayerGroupUnassigned(assignment));
+            Bukkit.getPluginManager().callEvent(new PlayerGroupUnassignedEvent(assignment));
         } catch (Exception e) {
             if (session.getTransaction().isActive()) {
                 session.getTransaction().rollback();
@@ -256,6 +251,34 @@ public final class PlayerManager {
             session.getTransaction().commit();
             return groups;
         } catch(Exception e) {
+            if (session.getTransaction().isActive()) {
+                session.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
+
+    /**
+     * Checks if the specified player belongs to the given group.
+     *
+     * @param player The Player object to check. Must not be null.
+     * @param group The Group to check if the player belongs to. Must not be null.
+     * @return true if the player belongs to the group, false otherwise.
+     */
+    public static boolean hasGroup(@NotNull Player player, @NotNull Group group) {
+        Session session = DatabaseManager.getSession();
+        try {
+            session.beginTransaction();
+            Long count = session.createQuery(
+                            "select count(a) from PlayerGroupAssigment a where a.player.id = :playerId and a.group.id = :groupId", Long.class)
+                    .setParameter("playerId", player.getId())
+                    .setParameter("groupId", group.getId())
+                    .uniqueResult();
+            session.getTransaction().commit();
+            return count != null && count > 0;
+        } catch (Exception e) {
             if (session.getTransaction().isActive()) {
                 session.getTransaction().rollback();
             }

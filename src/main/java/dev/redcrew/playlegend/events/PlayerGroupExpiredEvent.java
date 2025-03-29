@@ -20,14 +20,19 @@ import org.jetbrains.annotations.NotNull;
  */
 @Getter
 @AllArgsConstructor
-public class PlayerGroupUnassigned extends Event {
+public class PlayerGroupExpiredEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
     private final PlayerGroupAssigment assigment;
 
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
+
     @Override
     public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
+
 }

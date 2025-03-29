@@ -2,6 +2,7 @@ package dev.redcrew.playlegend.entitiy;
 
 import jakarta.persistence.Embeddable;
 import lombok.*;
+import org.bukkit.Location;
 
 import java.io.Serializable;
 import java.util.UUID;
@@ -22,8 +23,11 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlayerGroupAssignmentId implements Serializable {
+public class PlayerDisplayId implements Serializable {
 
     private UUID playerId;
-    private Long groupId;
+    private String world;
+    private int x;
+    private int y;
+    private int z;
 }

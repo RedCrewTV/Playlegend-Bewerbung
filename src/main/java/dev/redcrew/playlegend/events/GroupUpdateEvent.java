@@ -1,5 +1,6 @@
 package dev.redcrew.playlegend.events;
 
+import dev.redcrew.playlegend.entitiy.Group;
 import dev.redcrew.playlegend.entitiy.PlayerGroupAssigment;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,14 +21,19 @@ import org.jetbrains.annotations.NotNull;
  */
 @Getter
 @AllArgsConstructor
-public class PlayerGroupAssigned extends Event {
+public class GroupUpdateEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final PlayerGroupAssigment assigment;
+    private final Group group;
+
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
 
     @Override
     public @NotNull HandlerList getHandlers() {
         return HANDLERS;
     }
+
 }

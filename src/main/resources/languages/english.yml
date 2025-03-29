@@ -25,3 +25,6 @@ playlegend_group_cmd_info_title: '&7Following groups are assigned to &9%name%&7:
 playlegend_group_cmd_info_group_title: '&9%name%&7:'
 playlegend_group_cmd_info_group_assigned: '&8- &7Assigned At: &9%date%'
 playlegend_group_cmd_info_group_expires: '&8- &7Expires At: &9%date%'
+playlegend_group_cmd_display_not_sign: '&7You are not targeting a sign.'
+playlegend_group_cmd_display_already: '&7This sign is already a display.'
+playlegend_group_cmd_display_created: '&7Display for &9%name%&7 created.'
