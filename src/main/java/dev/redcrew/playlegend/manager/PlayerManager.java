@@ -1,19 +1,26 @@
 package dev.redcrew.playlegend.manager;
 
 import dev.redcrew.playlegend.DatabaseManager;
+import dev.redcrew.playlegend.Playlegend;
 import dev.redcrew.playlegend.entitiy.Group;
 import dev.redcrew.playlegend.entitiy.Player;
 import dev.redcrew.playlegend.entitiy.PlayerGroupAssigment;
 import dev.redcrew.playlegend.entitiy.PlayerGroupAssignmentId;
 import dev.redcrew.playlegend.events.PlayerGroupAssigned;
+import dev.redcrew.playlegend.events.PlayerGroupExpired;
 import dev.redcrew.playlegend.events.PlayerGroupUnassigned;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.hibernate.Session;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * This file is a JavaDoc!
@@ -61,6 +68,23 @@ public final class PlayerManager {
             session.beginTransaction();
             Player p = session.get(Player.class, player.getId());
             if(p != null) session.remove(p);
+        } finally {
+            session.getTransaction().commit();
+            session.close();
+        }
+    }
+
+    /**
+     * Retrieves a list of all players registered in the system.
+     *
+     * @return A List of Player objects representing all registered players.
+     */
+    public static List<Player> getPlayers() {
+        Session session = DatabaseManager.getSession();
+
+        try {
+            session.beginTransaction();
+            return session.createQuery("from Player", Player.class).getResultList();
         } finally {
             session.getTransaction().commit();
             session.close();
@@ -158,6 +182,16 @@ public final class PlayerManager {
 
             session.persist(assignment);
             session.getTransaction().commit();
+
+            if(expiresAt != null) {
+                Bukkit.getAsyncScheduler().runDelayed(Playlegend.getInstance(), task -> {
+
+                    unassignGroup(player, group);
+                    Bukkit.getPluginManager().callEvent(new PlayerGroupExpired(assignment));
+
+                }, LocalDateTime.now().until(expiresAt, ChronoUnit.SECONDS), TimeUnit.SECONDS);
+            }
+
             Bukkit.getPluginManager().callEvent(new PlayerGroupAssigned(assignment));
         } catch(Exception e) {
             if(session.getTransaction().isActive()){
@@ -194,6 +228,34 @@ public final class PlayerManager {
             session.getTransaction().commit();
             Bukkit.getPluginManager().callEvent(new PlayerGroupUnassigned(assignment));
         } catch (Exception e) {
+            if (session.getTransaction().isActive()) {
+                session.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
+
+    /**
+     * Retrieves a list of groups associated with the specified player.
+     *
+     * @param player The Player object for which to retrieve associated groups. Must not be null.
+     * @return A List of Group objects that the player is assigned to.
+     */
+    public static List<Group> getGroupsForPlayer(@NotNull Player player) {
+        Session session = DatabaseManager.getSession();
+        try {
+            session.beginTransaction();
+
+            List<Group> groups = session.createQuery(
+                            "select a.group from PlayerGroupAssigment a where a.player.id = :playerId", Group.class)
+                    .setParameter("playerId", player.getId())
+                    .getResultList();
+
+            session.getTransaction().commit();
+            return groups;
+        } catch(Exception e) {
             if (session.getTransaction().isActive()) {
                 session.getTransaction().rollback();
             }

@@ -28,6 +28,7 @@ public final class Playlegend extends JavaPlugin {
         instance = this;
 
         //Default Group
+        GroupManager.deleteExpiredGroupAssignments();
         GroupManager.registerGroup(new Group("default", 0, "&7Spieler &8| &7"));
 
         //Language

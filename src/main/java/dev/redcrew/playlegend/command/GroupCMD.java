@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,12 +31,46 @@ import java.util.stream.Collectors;
  * Discord: redcrew <p>
  * Website: <a href="https://redcrew.dev/">https://redcrew.dev/</a>
  */
-public class GroupCMD implements CommandExecutor, TabCompleter {
+public final class GroupCMD implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if(sender instanceof Player player) {
             if(args.length >= 1) {
                 switch (args[0].toLowerCase()) {
+                    case "info" -> {
+                        if(args.length >= 2) {
+                            dev.redcrew.playlegend.entitiy.Player target = PlayerManager.getPlayerByName(args[1]);
+
+                            if (target == null) {
+                                player.sendMessage(TranslatableText.of("playlegend_group_cmd_exists_not_player",
+                                        Language.getPreferredLanguage(player), new Tuple<>("%name%", args[1])).getText());
+                                return true;
+                            }
+
+                            player.sendMessage(TranslatableText.of("playlegend_group_cmd_info_title",
+                                    Language.getPreferredLanguage(player), new Tuple<>("%name%", target.getName())).getText());
+
+                            GroupManager.getAssignmentsForPlayer(target).forEach(assignment -> {
+                                player.sendMessage(TranslatableText.of("playlegend_group_cmd_info_group_title",
+                                        Language.getPreferredLanguage(player), new Tuple<>("%name%", assignment.getGroup().getName())).getText());
+
+                                player.sendMessage(TranslatableText.of("playlegend_group_cmd_info_group_assigned",
+                                        Language.getPreferredLanguage(player),
+                                        new Tuple<>("%date%", DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(assignment.getAssignedAt())))
+                                        .getText());
+
+                                if(assignment.getExpiresAt() != null) {
+                                    player.sendMessage(TranslatableText.of("playlegend_group_cmd_info_group_expires",
+                                                    Language.getPreferredLanguage(player),
+                                                    new Tuple<>("%date%", DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss").format(assignment.getExpiresAt())))
+                                            .getText());
+                                }
+
+                            });
+
+                            return true;
+                        }
+                    }
                     case "create" -> {
                         if(args.length >= 4) {
                             String name = args[1];
@@ -154,6 +189,7 @@ public class GroupCMD implements CommandExecutor, TabCompleter {
                         player.sendMessage(TranslatableText.of("playlegend_group_cmd_help_edit", Language.getPreferredLanguage(player)).getText());
                         player.sendMessage(TranslatableText.of("playlegend_group_cmd_help_unassign", Language.getPreferredLanguage(player)).getText());
                         player.sendMessage(TranslatableText.of("playlegend_group_cmd_help_assign", Language.getPreferredLanguage(player)).getText());
+                        player.sendMessage(TranslatableText.of("playlegend_group_cmd_help_info", Language.getPreferredLanguage(player)).getText());
                         return true;
                     }
                     case "assign" -> {
@@ -175,7 +211,29 @@ public class GroupCMD implements CommandExecutor, TabCompleter {
                             }
 
                             if(args.length >= 7) {
-                                //todo set expire
+                                int days;
+                                int hours;
+                                int minutes;
+                                int seconds;
+
+                                try {
+                                    days = Integer.parseInt(args[3]);
+                                    hours = Integer.parseInt(args[4]);
+                                    minutes = Integer.parseInt(args[5]);
+                                    seconds = Integer.parseInt(args[6]);
+                                } catch (NumberFormatException ignored) {
+                                    player.sendMessage(TranslatableText.of("playlegend_group_cmd_not_number", Language.getPreferredLanguage(player)).getText());
+                                    return true;
+                                }
+
+                                expire = LocalDateTime.now().plusDays(days).plusHours(hours).plusMinutes(minutes).plusSeconds(seconds);
+
+                            }
+
+                            if(PlayerManager.getGroupsForPlayer(target).contains(group)) {
+                                player.sendMessage(TranslatableText.of("playlegend_group_cmd_assign_already_assigned",
+                                        Language.getPreferredLanguage(player), new Tuple<>("%name%", args[2])).getText());
+                                return true;
                             }
 
                             PlayerManager.assignGroup(target, group, expire);
@@ -186,7 +244,35 @@ public class GroupCMD implements CommandExecutor, TabCompleter {
                         }
                     }
                     case "unassign" -> {
-                        //todo write this command
+                        if(args.length >= 3) {
+                            dev.redcrew.playlegend.entitiy.Player target = PlayerManager.getPlayerByName(args[1]);
+                            Group group = GroupManager.getGroupByName(args[2]);
+                            LocalDateTime expire = null;
+
+                            if (target == null) {
+                                player.sendMessage(TranslatableText.of("playlegend_group_cmd_exists_not_player",
+                                        Language.getPreferredLanguage(player), new Tuple<>("%name%", args[1])).getText());
+                                return true;
+                            }
+
+                            if (group == null) {
+                                player.sendMessage(TranslatableText.of("playlegend_group_cmd_exists_not",
+                                        Language.getPreferredLanguage(player), new Tuple<>("%name%", args[2])).getText());
+                                return true;
+                            }
+
+                            if(!PlayerManager.getGroupsForPlayer(target).contains(group)) {
+                                player.sendMessage(TranslatableText.of("playlegend_group_cmd_unassign_already_unassigned",
+                                        Language.getPreferredLanguage(player), new Tuple<>("%name%", args[2])).getText());
+                                return true;
+                            }
+
+                            PlayerManager.unassignGroup(target, group);
+                            player.sendMessage(TranslatableText.of("playlegend_group_cmd_unassign_unassigned",
+                                    Language.getPreferredLanguage(player), new Tuple<>("%name%", args[2])).getText());
+
+                            return true;
+                        }
                     }
                 }
             }
@@ -200,10 +286,19 @@ public class GroupCMD implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if(args.length == 1) {
-            return List.of("create", "delete", "list", "edit", "help", "assign", "unassign");
+            return List.of("create", "delete", "list", "edit", "help", "assign", "unassign", "info");
         }
 
         if(args.length == 2 && (args[0].equalsIgnoreCase("edit") || args[0].equalsIgnoreCase("delete"))) {
+            return GroupManager.getGroups().stream().map(Group::getName).toList();
+        }
+
+        if(args.length == 2 && (args[0].equalsIgnoreCase("assign") || args[0].equalsIgnoreCase("unassign"))
+                || args[0].equalsIgnoreCase("info")) {
+            return PlayerManager.getPlayers().stream().map(dev.redcrew.playlegend.entitiy.Player::getName).toList();
+        }
+
+        if(args.length == 3 && (args[0].equalsIgnoreCase("assign") || args[0].equalsIgnoreCase("unassign"))) {
             return GroupManager.getGroups().stream().map(Group::getName).toList();
         }
 

@@ -3,11 +3,13 @@ package dev.redcrew.playlegend.manager;
 import dev.redcrew.playlegend.DatabaseManager;
 import dev.redcrew.playlegend.entitiy.Group;
 import dev.redcrew.playlegend.entitiy.Player;
+import dev.redcrew.playlegend.entitiy.PlayerGroupAssigment;
 import jakarta.transaction.RollbackException;
 import lombok.Getter;
 import org.hibernate.Session;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -191,5 +193,60 @@ public final class GroupManager {
             session.close();
         }
     }
+
+    /**
+     * Deletes expired group assignments from the database. This method performs a database operation to remove
+     * group assignments that have an expiration date set and that expiration date is earlier than the current system time.
+     * It uses Hibernate Session to execute a query to delete such expired group assignments.
+     * If an exception occurs during the deletion process, it rolls back the transaction and closes the session.
+     */
+    public static void deleteExpiredGroupAssignments() {
+        Session session = DatabaseManager.getSession();
+        try {
+            session.beginTransaction();
+
+            session.createQuery("delete from PlayerGroupAssigment a where a.expiresAt is not null and a.expiresAt < :now")
+                    .setParameter("now", LocalDateTime.now())
+                    .executeUpdate();
+
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            if (session.getTransaction().isActive()) {
+                session.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            session.close();
+        }
+    }
+
+    /**
+     * Retrieves the list of group assignments for a specific player.
+     *
+     * @param player The Player object for which to retrieve the assignments. Must not be null.
+     * @return A list of PlayerGroupAssignment objects representing the assignments of the player.
+     */
+    public static List<PlayerGroupAssigment> getAssignmentsForPlayer(@NotNull Player player) {
+        Session session = DatabaseManager.getSession();
+        List<PlayerGroupAssigment> assignments;
+        try {
+            session.beginTransaction();
+
+            assignments = session.createQuery(
+                            "from PlayerGroupAssigment a where a.player.id = :playerId", PlayerGroupAssigment.class)
+                    .setParameter("playerId", player.getId())
+                    .getResultList();
+            session.getTransaction().commit();
+        } catch(Exception e) {
+            if(session.getTransaction().isActive()){
+                session.getTransaction().rollback();
+            }
+            throw e;
+        } finally {
+            session.close();
+        }
+        return assignments;
+    }
+
 
 }
