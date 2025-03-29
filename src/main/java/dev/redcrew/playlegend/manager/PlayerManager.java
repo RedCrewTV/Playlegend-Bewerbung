@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -182,9 +183,13 @@ public final class PlayerManager {
 
             if(expiresAt != null) {
                 Bukkit.getAsyncScheduler().runDelayed(Playlegend.getInstance(), task -> Bukkit.getScheduler().runTask(Playlegend.getInstance(), () -> {
-                            unassignGroup(player, group);
+                            if(GroupManager.getGroupByName(group.getName()) != null) unassignGroup(player, group);
                             Bukkit.getPluginManager().callEvent(new PlayerGroupExpiredEvent(assignment));
                         }), LocalDateTime.now().until(expiresAt, ChronoUnit.SECONDS), TimeUnit.SECONDS);
+            }
+
+            if (Bukkit.getPlayer(player.getId()) != null) {
+                TablistManager.setPlayerTeam(Objects.requireNonNull(Bukkit.getPlayer(player.getId())));
             }
 
             Bukkit.getPluginManager().callEvent(new PlayerGroupAssignedEvent(assignment));
@@ -221,6 +226,11 @@ public final class PlayerManager {
 
             session.remove(assignment);
             session.getTransaction().commit();
+
+            if (Bukkit.getPlayer(player.getId()) != null) {
+                TablistManager.setPlayerTeam(Objects.requireNonNull(Bukkit.getPlayer(player.getId())));
+            }
+
             Bukkit.getPluginManager().callEvent(new PlayerGroupUnassignedEvent(assignment));
         } catch (Exception e) {
             if (session.getTransaction().isActive()) {

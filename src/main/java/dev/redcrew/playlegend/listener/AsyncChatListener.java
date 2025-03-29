@@ -1,5 +1,6 @@
 package dev.redcrew.playlegend.listener;
 
+import dev.redcrew.playlegend.manager.GroupManager;
 import dev.redcrew.playlegend.manager.PlayerManager;
 import io.papermc.paper.chat.ChatRenderer;
 import io.papermc.paper.event.player.AsyncChatEvent;
@@ -30,10 +31,8 @@ public final class AsyncChatListener implements Listener, ChatRenderer.ViewerUna
 
     @Override
     public Component render(Player source, Component sourceDisplayName, Component message) {
-        return LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(PlayerManager.getHighestPriorityGroupForPlayer(PlayerManager.getPlayerByUUID(source.getUniqueId())).getPrefix())
-                .append(sourceDisplayName)
-                .appendSpace()
-                .append(message);
+        dev.redcrew.playlegend.entitiy.Player dbPlayer = PlayerManager.getPlayerByUUID(source.getUniqueId());
+        return GroupManager.getGroupPrefix(PlayerManager.getHighestPriorityGroupForPlayer(dbPlayer), dbPlayer)
+                .appendSpace().append(message);
     }
 }

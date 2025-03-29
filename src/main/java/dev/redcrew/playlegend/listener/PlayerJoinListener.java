@@ -2,8 +2,7 @@ package dev.redcrew.playlegend.listener;
 
 import dev.redcrew.playlegend.manager.GroupManager;
 import dev.redcrew.playlegend.manager.PlayerManager;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import dev.redcrew.playlegend.manager.TablistManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -34,10 +33,12 @@ public final class PlayerJoinListener implements Listener {
             PlayerManager.updatePlayerName(PlayerManager.getPlayerByUUID(player.getUniqueId()), player.getName());
         }
 
-        event.joinMessage(LegacyComponentSerializer.legacyAmpersand()
-                .deserialize(PlayerManager.getHighestPriorityGroupForPlayer(
-                        PlayerManager.getPlayerByUUID(player.getUniqueId())).getPrefix())
-                .append(Component.text(player.getName())));
+        event.joinMessage(GroupManager.getGroupPrefix(
+                PlayerManager.getHighestPriorityGroupForPlayer(PlayerManager.getPlayerByUUID(player.getUniqueId())),
+                PlayerManager.getPlayerByUUID(player.getUniqueId())
+        ));
+
+        TablistManager.setPlayerTeam(player);
 
 
 

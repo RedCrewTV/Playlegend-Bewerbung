@@ -7,6 +7,8 @@ import dev.redcrew.playlegend.entitiy.PlayerGroupAssigment;
 import dev.redcrew.playlegend.events.GroupUpdateEvent;
 import jakarta.transaction.RollbackException;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.hibernate.Session;
 import org.jetbrains.annotations.NotNull;
@@ -251,6 +253,10 @@ public final class GroupManager {
             session.close();
         }
         return assignments;
+    }
+
+    public static Component getGroupPrefix(@NotNull Group group, @NotNull Player player) {
+        return LegacyComponentSerializer.legacyAmpersand().deserialize(group.getPrefix() + player.getName());
     }
 
 
